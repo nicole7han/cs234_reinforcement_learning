@@ -52,19 +52,21 @@ def policy_evaluation(P, nS, nA, policy, gamma=0.9, tol=1e-3):
 		the value of state s
 	"""
     value_function = np.zeros(nS)
-    value_function_old = value_function
+    value_function_old = value_function.copy()
+    iter = 0
 	############################
 	# YOUR IMPLEMENTATION HERE #
-    while value_function.sum()==0 or abs(value_function-value_function_old).max >= tol:
-        value_function_old = value_function
+    while iter<=10 or abs(value_function-value_function_old).max()>= tol:
+        value_function_old = value_function.copy()
         for s1 in range(nS):
             a1 = policy[s1] # action1 in s1 based on policy
             p = P[s1][a1][0][0] # probabilty s1->s2
             s2 = P[s1][a1][0][1] # next state given s1, a1
-            a2 = policy[s2] # action2 in s2 based on policy
             cur_r = P[s1][a1][0][2] # current reward |s1,a1
-            fut_r = P[s2][a2][0][2] # future reward |s2,a2
-            value_function[s1] = cur_r + gamma*(p*fut_r+(1-p)*cur_r)
+            if P[s1][a1][0][-1] == False: #not terminal state
+                value_function[s1] = cur_r + gamma*(p*value_function[s2]+(1-p)*cur_r)
+            else: value_function[s1] = cur_r
+        iter +=1
 	############################
     return value_function
 
@@ -88,7 +90,7 @@ def policy_improvement(P, nS, nA, value_from_policy, policy, gamma=0.9):
 		in that state according to the environment dynamics and the
 		given value function.
 	"""
-    new_policy = policy
+    new_policy = policy.copy()
 #	new_policy = np.zeros(nS, dtype='int')
 	############################
 	# YOUR IMPLEMENTATION HERE #
@@ -129,14 +131,15 @@ def policy_iteration(P, nS, nA, gamma=0.9, tol=10e-3):
 	"""
     value_function = np.zeros(nS)
     policy = np.zeros(nS, dtype=int)
-    value_function_old = value_function
+    value_function_old = value_function.copy()
+    iter = 0 
 	############################
 	# YOUR IMPLEMENTATION HERE #
-    while value_function.sum()==0 or abs(value_function-value_function_old).max()>=tol:
-        value_function_old = value_function
+    while iter<=10 or abs(value_function-value_function_old).max()>=tol:
+        value_function_old = value_function.copy()
         value_function = policy_evaluation(P, nS, nA, policy, gamma=gamma, tol=tol)
         policy = policy_improvement(P, nS, nA, value_function, policy, gamma=gamma)
-
+        iter +=1
 	############################
     return value_function, policy
 
@@ -161,20 +164,25 @@ def value_iteration(P, nS, nA, gamma=0.9, tol=1e-3):
 	"""
     value_function = np.zeros(nS)
     policy = np.zeros(nS, dtype=int)
-    value_function_old = value_function
+    value_function_old = value_function.copy()
+    iter = 0
 	############################
 	# YOUR IMPLEMENTATION HERE #
-    while value_function.sum()==0 or abs(value_function-value_function_old).max()>=tol:
-        value_function_old = value_function
+    while iter<=3 or abs(value_function-value_function_old).max()>=tol:
+        value_function_old = value_function.copy()
         for s1 in range(nS): #for each state, find action gives maximum value
             for a1 in range(nA):
                 p = P[s1][a1][0][0]
                 s2 = P[s1][a1][0][1]
-                val = P[s1][a1][0][2] + gamma*(p*value_function[s2] + (1-p)*value_function[s1])
+                if P[s1][a1][0][-1] == False:
+                    val = P[s1][a1][0][2] + gamma*(p*value_function[s2] + (1-p)*value_function[s1])
+                else:
+                    val = P[s1][a1][0][2]
                 if val>value_function[s1]: # if action1 gives higher value function
+                    print('updating state {} value = {}'.format(s1,val))
                     value_function[s1] = val
                     policy[s1] = a1
-
+        iter+=1
 	############################
     return value_function, policy
 
