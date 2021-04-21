@@ -34,7 +34,8 @@ class Linear(DQN):
 
         ##############################################################
         ################ YOUR CODE HERE (2 lines) ##################
-
+        self.q_network = nn.Linear(img_height*img_width*n_channels*self.config.state_history, num_actions)
+        self.target_network = nn.Linear(img_height*img_width*n_channels*self.config.state_history, num_actions)
         ##############################################################
         ######################## END YOUR CODE #######################
 
@@ -56,11 +57,14 @@ class Linear(DQN):
             1. Look up torch.flatten
             2. You can forward a tensor through a network by simply calling it (i.e. network(tensor))
         """
-        out = None
+
 
         ##############################################################
         ################ YOUR CODE HERE - 3-5 lines ##################
-
+        if network == 'q_network':
+            out = self.q_network(torch.flatten(state, start_dim=1))
+        elif network == 'target_network':
+            out = self.target_network(torch.flatten(state, start_dim=1))
         ##############################################################
         ######################## END YOUR CODE #######################
 
@@ -84,7 +88,8 @@ class Linear(DQN):
 
         ##############################################################
         ################### YOUR CODE HERE - 1-2 lines ###############
-
+        torch.save(self.q_network.state_dict(), 'q_model.pt')
+        self.target_network.load_state_dict(torch.load('q_model.pt'))
         ##############################################################
         ######################## END YOUR CODE #######################
 
@@ -123,7 +128,12 @@ class Linear(DQN):
 
         ##############################################################
         ##################### YOUR CODE HERE - 3-5 lines #############
+        notdone = 1- done_mask.to(torch.int64)
+        current_q = torch.max(q_values * torch.nn.functional.one_hot(actions.to(torch.int64), num_actions), 1).values# elementwise product to get reward for each batch
+        target_q = rewards + notdone * gamma * torch.max(target_q_values, 1).values
 
+        loss = torch.nn.functional.mse_loss(current_q, target_q)
+        return loss
         ##############################################################
         ######################## END YOUR CODE #######################
 
@@ -139,7 +149,7 @@ class Linear(DQN):
         """
         ##############################################################
         #################### YOUR CODE HERE - 1 line #############
-
+        self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=0.0001, betas=(0.5, 0.999), eps=1e-08)
         ##############################################################
         ######################## END YOUR CODE #######################
 

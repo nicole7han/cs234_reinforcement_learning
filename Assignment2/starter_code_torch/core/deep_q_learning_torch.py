@@ -229,7 +229,7 @@ class DQN(QN):
             group['lr'] = lr
         self.optimizer.step()
         self.timer.end('update_step/optimizer')
-        return loss.item(), total_norm.item()
+        return loss.item(), total_norm #.item()
 
 
     def update_target_params(self):

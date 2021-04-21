@@ -11,10 +11,10 @@ class ActionSpace(object):
 class ObservationSpace(object):
     def __init__(self, shape):
         self.shape = shape
-        self.state_0 = np.random.randint(0, 50, shape, dtype=np.uint16)
-        self.state_1 = np.random.randint(100, 150, shape, dtype=np.uint16)
-        self.state_2 = np.random.randint(200, 250, shape, dtype=np.uint16)
-        self.state_3 = np.random.randint(300, 350, shape, dtype=np.uint16)
+        self.state_0 = np.random.randint(0, 50, shape)
+        self.state_1 = np.random.randint(100, 150, shape)
+        self.state_2 = np.random.randint(200, 250, shape)
+        self.state_3 = np.random.randint(300, 350, shape)
         self.states = [self.state_0, self.state_1, self.state_2, self.state_3]   
 
 
