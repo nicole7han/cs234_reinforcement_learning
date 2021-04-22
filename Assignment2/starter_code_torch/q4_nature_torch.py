@@ -43,18 +43,19 @@ class NatureQN(Linear):
         state_shape = list(self.env.observation_space.shape)
         img_height, img_width, n_channels = state_shape
         num_actions = self.env.action_space.n
+        num_hist = self.config.state_history
 
         ##############################################################
         ################ YOUR CODE HERE - 25-30 lines lines ################class Personality(torch.nn.Module):
         class net(torch.nn.Module):
-            def __init__(self, img_height, num_actions):
+            def __init__(self, img_height, num_hist, n_channels, num_actions):
                 super(net, self).__init__()
                 self.conv = nn.Sequential(
-                    nn.Conv2d(4, 32, 8, stride=4, padding=((4 - 1) * img_height - 4 + 8) // 2 ),
+                    nn.Conv2d(in_channels=n_channels*num_hist, out_channels=32, kernel_size=8, stride=4, padding=((4 - 1) * img_height - 4 + 8) // 2 ),
                     nn.ReLU(True),
-                    nn.Conv2d(32, 64, 4, stride=2, padding=((2 - 1) * img_height - 2 + 4) // 2 ),
+                    nn.Conv2d(in_channels=32, out_channels=64, kernel_size=4, stride=2, padding=((2 - 1) * img_height - 2 + 4) // 2 ),
                     nn.ReLU(True),
-                    nn.Conv2d(64, 64, 3, stride=1, padding=((1 - 1) * img_height - 1 + 3) // 2 ),
+                    nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, stride=1, padding=((1 - 1) * img_height - 1 + 3) // 2 ),
                     nn.ReLU(True),
                     nn.Flatten()
                 )
@@ -70,8 +71,8 @@ class NatureQN(Linear):
               return x
 
 
-        self.q_network = net(img_height, num_actions)
-        self.target_network = net(img_height, num_actions)
+        self.q_network = net(img_height, num_hist, n_channels, num_actions)
+        self.target_network = net(img_height, num_hist, n_channels, num_actions)
         ##############################################################
         ######################## END YOUR CODE #######################
 
@@ -92,15 +93,15 @@ class NatureQN(Linear):
             1. What are the input shapes to the network as compared to the "state" argument?
             2. You can forward a tensor through a network by simply calling it (i.e. network(tensor))
         """
-        out = None
-
         ##############################################################
         ################ YOUR CODE HERE - 4-5 lines lines ################
-
+        if network=="q_network":
+            out = self.q_network(state.permute(0,3,1,2))
+        elif network=="target_network":
+            out = self.target_network(state.permute(0,3,1,2))
         ##############################################################
         ######################## END YOUR CODE #######################
         return out
-
 
 """
 Use deep Q network for test environment.
