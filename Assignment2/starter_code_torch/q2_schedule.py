@@ -1,5 +1,4 @@
 import numpy as np
-import random
 from utils.test_env import EnvTest
 
 
@@ -34,12 +33,8 @@ class LinearSchedule(object):
         """
         ##############################################################
         ################ YOUR CODE HERE - 3-4 lines ##################
-        delta = (float(self.eps_end - self.eps_begin))/self.nsteps
-        for i in range(t):
-            if i<self.nsteps:
-                self.epsilon += delta
-            else: break
-        return round(self.epsilon,2)
+        value = np.linspace(self.eps_end, self.eps_begin, int(self.nsteps+1))
+        self.epsilon = value[t] if t <= self.nsteps else self.eps_end
         ##############################################################
         ######################## END YOUR CODE ############## ########
 
@@ -82,7 +77,7 @@ class LinearExploration(LinearSchedule):
         """
         ##############################################################
         ################ YOUR CODE HERE - 4-5 lines ##################
-        if random.random()<=self.epsilon:
+        if np.random.rand()<=self.epsilon:
             return self.env.action_space.sample()
         else:
             return best_action
@@ -109,7 +104,7 @@ def test2():
     env = EnvTest((5, 5, 1))
     exp_strat = LinearExploration(env, 1, 0, 10)
     exp_strat.update(5)
-    assert round(exp_strat.epsilon,2) == 0.5, "Test 2 failed"
+    assert exp_strat.epsilon == 0.5, "Test 2 failed"
     print("Test2: ok")
 
 
@@ -117,7 +112,7 @@ def test3():
     env = EnvTest((5, 5, 1))
     exp_strat = LinearExploration(env, 1, 0.5, 10)
     exp_strat.update(20)
-    assert round(exp_strat.epsilon,2) == 0.5, "Test 3 failed"
+    assert exp_strat.epsilon == 0.5, "Test 3 failed"
     print("Test3: ok")
 
 

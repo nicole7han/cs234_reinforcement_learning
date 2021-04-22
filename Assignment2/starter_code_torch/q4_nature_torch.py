@@ -29,7 +29,7 @@ class NatureQN(Linear):
         3. What is the input size of the model?
 
         To simplify, we specify the paddings as:
-            (stride - 1) * img_height - stride + filter_size) // 2
+            ((stride - 1) * img_height - stride + filter_size) // 2
 
         Hints:
             1. Simply setting self.target_network = self.q_network is incorrect.
@@ -45,8 +45,33 @@ class NatureQN(Linear):
         num_actions = self.env.action_space.n
 
         ##############################################################
-        ################ YOUR CODE HERE - 25-30 lines lines ################
+        ################ YOUR CODE HERE - 25-30 lines lines ################class Personality(torch.nn.Module):
+        class net(torch.nn.Module):
+            def __init__(self, img_height, num_actions):
+                super(net, self).__init__()
+                self.conv = nn.Sequential(
+                    nn.Conv2d(4, 32, 8, stride=4, padding=((4 - 1) * img_height - 4 + 8) // 2 ),
+                    nn.ReLU(True),
+                    nn.Conv2d(32, 64, 4, stride=2, padding=((2 - 1) * img_height - 2 + 4) // 2 ),
+                    nn.ReLU(True),
+                    nn.Conv2d(64, 64, 3, stride=1, padding=((1 - 1) * img_height - 1 + 3) // 2 ),
+                    nn.ReLU(True),
+                    nn.Flatten()
+                )
+                self.fc1 = nn.Linear(64*img_height*img_height, 512) #image upsample size + personality
+                self.fc2 = nn.Linear(512, num_actions)
+                self.relu = nn.ReLU()
+                self.softmax = nn.Softmax(dim=1)
 
+            def forward(self, x):
+              x = self.conv(x)
+              x = self.relu(self.fc1(x))
+              x = self.softmax(self.fc2(x))
+              return x
+
+
+        self.q_network = net(img_height, num_actions)
+        self.target_network = net(img_height, num_actions)
         ##############################################################
         ######################## END YOUR CODE #######################
 
